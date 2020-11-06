@@ -38,6 +38,8 @@ class Tensor:
         ANY = 0
         FP32 = 10
         U8 = 40
+        I32 = 70
+
 
     ## @brief This enum describes model layer layout
     class LAYOUT(Enum):
@@ -75,6 +77,8 @@ class Tensor:
             view = numpy.float32
         elif precision == self.PRECISION.U8:
             view = numpy.uint8
+        elif precision == self.PRECISION.I32:
+            view = numpy.int32
         else:
             return None
         gvalue = libgst.gst_structure_get_value(
@@ -237,6 +241,8 @@ class Tensor:
             return "U8"
         elif precision == self.PRECISION.FP32:
             return "FP32"
+        elif precision == self.PRECISION.I32:
+            return "I32"
         else:
             return "UNSPECIFIED"
 

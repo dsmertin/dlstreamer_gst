@@ -143,7 +143,6 @@ class VideoFrame:
 
     ## @brief Get buffer data wrapped by numpy.ndarray
     #  @return numpy array instance
-    @contextmanager
     def data(self, flag: Gst.MapFlags = Gst.MapFlags.WRITE) -> numpy.ndarray:
         with gst_buffer_data(self.__buffer, flag) as data:
             bytes_per_pix = self.__video_info.finfo.pixel_stride[0]  # pixel stride for 1st plane. works well for for 1-plane formats, like BGR, BGRA, BGRx
@@ -169,7 +168,7 @@ class VideoFrame:
                             stacklevel=2)
 
             try:
-                yield numpy.ndarray((h, w, bytes_per_pix), buffer=data, dtype=numpy.uint8)
+                return numpy.ndarray((h, w, bytes_per_pix), buffer=data, dtype=numpy.uint8)
             except TypeError as e:
                 warn(str(e) + "\nSize of buffer's data: {}, and requested size: {}".format(
                     len(data), h * w * bytes_per_pix), stacklevel=2)

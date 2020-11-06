@@ -40,6 +40,9 @@ int GetUnbatchedSizeInBytes(InferenceBackend::OutputBlob::Ptr blob, size_t batch
         break;
     case InferenceBackend::OutputBlob::Precision::U8:
         break;
+    case InferenceBackend::OutputBlob::Precision::I32:
+        size *= sizeof(int32_t);
+        break;
     default:
         throw std::invalid_argument("Failed to get blob size for blob with " +
                                     std::to_string(static_cast<int>(blob->GetPrecision())) +
