@@ -1,3 +1,9 @@
+import gi
+gi.require_version('Gst', '1.0')
+gi.require_version('GstApp', '1.0')
+gi.require_version("GstVideo", "1.0")
+from gi.repository import GObject, Gst, GstApp, GstVideo, GLib
+
 from gstgva import VideoFrame
 from gstgva import Tensor
 import numpy as np
@@ -26,33 +32,31 @@ color_mask = {0: [255, 0, 0],
               }
 
 frame_num = 0
-
-
 def process_frame(frame: VideoFrame) -> bool:
     global frame_num
     frame_num += 1
     try:
         frame_w = frame.video_meta().width
         frame_h = frame.video_meta().height
-        frame_img = frame.data()
-        frame_img = frame_img.reshape(
-            (frame_h, frame_w, 3))  # 3 - should be BGR type
-        for tensor in frame.tensors():
-            data = tensor.data()
-            mask = data.reshape((1024, 2048))  # model output shape
-            color_image = np.zeros((1024, 2048, 3))
-            for i, row in enumerate(mask):
-                for j, col in enumerate(row):
-                    color_image[i, j] = color_mask[col]
+        with frame.data() as frame_img:
+            frame_img = frame_img.reshape(
+                (frame_h, frame_w, 3))  # 3 - should be BGR type
+            for tensor in frame.tensors():
+                data = tensor.data()
+                mask = data.reshape((1024, 2048))  # model output shape
+                color_image = np.zeros((1024, 2048, 3))
+                for i, row in enumerate(mask):
+                    for j, col in enumerate(row):
+                        color_image[i, j] = color_mask[col]
 
-            color_image = cv.resize(
-                color_image, (frame_w, frame_h))
+                color_image = cv.resize(
+                    color_image, (frame_w, frame_h))
 
-            segm_img = color_image + frame_img
-            segm_img /= segm_img.max() / 255.0
+                segm_img = color_image + frame_img
+                segm_img /= segm_img.max() / 255.0
 
-            cv.imwrite(
-                "segm_frames/segmented_image_{}.png".format(frame_num), segm_img)
+                cv.imwrite(
+                    "segm_frames/segmented_image_{}.png".format(frame_num), segm_img)
     except Exception as e:
         print("Exception:", e)
         return False
